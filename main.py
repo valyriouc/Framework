@@ -31,7 +31,6 @@ class HackeroneApiEndpoints:
     def weaknesses(programName: str) -> str:
         return f"programs/{programName}/weaknesses"
     
-
 class HackeroneApiBuilder:
     def __init__(self):
         self.url = "https://api.hackerone.com/"   
@@ -70,6 +69,22 @@ class HackeroneApiBuilder:
         return url
 
 app = flask.Flask(__name__)
+
+@app.route("/api/programs/")
+def programs():
+    page_index = flask.request.args.get("pageIndex")
+    page_size = flask.request.args.get("pageSize")
+
+    builder = HackeroneApiBuilder()
+
+    url = builder.with_version1().with_hacker().with_endpoint(HackeroneApiEndpoints.programs()).build()
+    url = f"{url}?page[number]={page_index}&page[size]={page_size}"
+
+    auth = requests.auth.HTTPBasicAuth("valacor", secret.HACKERONE_AT)
+    res = requests.get(url, auth=auth)
+
+    content = res.json()
+    return [{"handle": program["attributes"]["handle"], "name": program["attributes"]["name"]} for program in content["data"]]
 
 def main(arguments):
     # serving web api 
