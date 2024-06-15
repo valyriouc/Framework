@@ -72,10 +72,11 @@ def main():
     builder = HackeroneApiBuilder()
 
     url = builder.with_version1().with_hacker().with_endpoint(HackeroneApiEndpoints.programs()).build()
-    res = requests.get(url, auth=('valacor', secret.HACKERONE_AT))
+    auth = requests.auth.HTTPBasicAuth("valacor", secret.HACKERONE_AT)
+    res = requests.get(url, auth=auth)
 
     content = res.json()
     print(content)
-    
+
 if __name__ == "__main__":
     main()
