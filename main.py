@@ -1,5 +1,6 @@
 import requests 
 import secret
+import flask
 
 class HackeroneApiEndpoints:
     @staticmethod
@@ -67,8 +68,21 @@ class HackeroneApiBuilder:
         url = self.url
         self.url = "https://api.hackerone.com/"
         return url
-     
-def main():
+
+app = flask.Flask(__name__)
+
+def main(arguments):
+    # serving web api 
+    if len(arguments) >= 1 and arguments[0] == "serve":
+        address = "127.0.0.1"
+        port = 7020
+        if len(arguments) == 2 and arguments[1] == "tls":
+            app.run(address, port+100, ssl_context=("cert.pem", "key.pem"))
+        else:
+            app.run(address, port)
+        return 
+
+    # run as command-line tool
     builder = HackeroneApiBuilder()
 
     url = builder.with_version1().with_hacker().with_endpoint(HackeroneApiEndpoints.programs()).build()
@@ -76,7 +90,8 @@ def main():
     res = requests.get(url, auth=auth)
 
     content = res.json()
-    print(content)
+    print([program["attributes"]["handle"] for program in content["data"]])
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(sys.argv[1:])
